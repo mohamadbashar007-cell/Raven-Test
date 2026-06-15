@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import type { ParticipantInfo } from "../App";
 import { QUESTIONS } from "../data/questions";
 import { lookupPercentileAndGrade } from "../data/norms";
-import { MatrixRenderer } from "./MatrixRenderer";
-import { Award, Check, FileText, RefreshCw, X } from "lucide-react";
+import { Award, FileText, RefreshCw } from "lucide-react";
 
 interface TestResultsProps {
   answers: Record<string, number>;
@@ -49,7 +48,7 @@ const getNarrative = (percentile: number, isAr: boolean) => {
     if (percentile >= 95) {
       return {
         interpretation:
-          "تظهر نتيجة الاختبار أن المستوى الفكري يقع ضمن المستوى الممتاز، متجاوزاً 95% من الأقران في الفئة العمرية المقارنة. يشير ذلك إلى قدرة عالية جداً على إدراك العلاقات البصرية، التقاط الأنماط المركبة، حل المشكلات المجردة، والانتقال السريع بين قواعد الاستدلال.",
+          "تظهر نتيجة الاختبار أن مستوى الذكاء يقع ضمن المستوى الممتاز، متجاوزاً 95% من الأقران في الفئة العمرية المقارنة. يشير ذلك إلى قدرة عالية جداً على إدراك العلاقات البصرية، التقاط الأنماط المركبة، حل المشكلات المجردة، والانتقال السريع بين قواعد الاستدلال.",
         suggestions: [
           "ارتفاع القدرة العقلية لا يعني الاستغناء عن الجهد المنظم؛ يوصى بوضع أهداف عالية ومستمرة.",
           "توفير بيئة تعلم غنية بالتحديات يساعد على استثمار القدرة الاستدلالية بشكل أفضل.",
@@ -142,9 +141,6 @@ export const TestResults: React.FC<TestResultsProps> = ({
   onRestart,
 }) => {
   const isAr = lang === "ar";
-  const [selectedReviewSet, setSelectedReviewSet] = useState<SetKey>("A");
-  const [activeReviewIndex, setActiveReviewIndex] = useState<number | null>(null);
-
   let scoreOf60 = 0;
   const setCorrectScores: Record<SetKey, number> = { A: 0, B: 0, C: 0, D: 0, E: 0 };
   const setTotals: Record<SetKey, number> = { A: 12, B: 12, C: 12, D: 12, E: 12 };
@@ -248,14 +244,14 @@ export const TestResults: React.FC<TestResultsProps> = ({
         </tbody>
       </table>
 
-      <SectionTitle>{isAr ? "المستوى الفكري" : "Intellectual Level"}</SectionTitle>
+      <SectionTitle>{isAr ? "مستوى الذكاء" : "Intelligence Level"}</SectionTitle>
       <div className="report-level mb-8">
         <p>
           {isAr ? "الدرجة المعيارية للتقييم: " : "Your Assessment Standard Score: "}
           <strong>{getPercentileText(result.percentile, isAr)}</strong>
         </p>
         <p>
-          {isAr ? "المستوى الفكري: " : "Your Intellectual Level: "}
+          {isAr ? "مستوى الذكاء: " : "Your Intelligence Level: "}
           <strong>{isAr ? result.labelAr : result.labelEn}</strong>
         </p>
         <p>
@@ -264,9 +260,11 @@ export const TestResults: React.FC<TestResultsProps> = ({
         </p>
       </div>
 
-      <SectionTitle>{isAr ? "تفسير النتيجة واقتراحات التطوير" : "Result Interpretation and Development Suggestions"}</SectionTitle>
-      <section className="report-text-block">
-        <h3>{isAr ? "تفسير النتيجة" : "Result Interpretation"}</h3>
+      <section className="report-text-block report-interpretation-section">
+        <div className="report-heading-group">
+          <SectionTitle>{isAr ? "تفسير النتيجة واقتراحات التطوير" : "Result Interpretation and Development Suggestions"}</SectionTitle>
+          <h3>{isAr ? "تفسير النتيجة" : "Result Interpretation"}</h3>
+        </div>
         <p>{narrative.interpretation}</p>
 
         <h3>{isAr ? "اقتراحات إرشادية" : "Guidance Suggestions"}</h3>
@@ -347,6 +345,8 @@ export const TestResults: React.FC<TestResultsProps> = ({
           font-weight: 800;
           margin: 30px 0 16px;
           color: #2d2d2d;
+          break-after: avoid;
+          page-break-after: avoid;
         }
         [dir="rtl"] .report-section-title {
           flex-direction: row-reverse;
@@ -407,6 +407,12 @@ export const TestResults: React.FC<TestResultsProps> = ({
           font-size: 20px;
           font-weight: 800;
           margin: 14px 0 8px;
+          break-after: avoid;
+          page-break-after: avoid;
+        }
+        .report-heading-group {
+          break-inside: avoid;
+          page-break-inside: avoid;
         }
         .report-text-block ul,
         .report-footer-notes {
@@ -455,6 +461,8 @@ export const TestResults: React.FC<TestResultsProps> = ({
           .report-section-title {
             font-size: 18px;
             margin: 20px 0 10px;
+            break-after: avoid;
+            page-break-after: avoid;
           }
           .report-sheet header h1 {
             font-size: 28px;
@@ -472,6 +480,17 @@ export const TestResults: React.FC<TestResultsProps> = ({
           }
           .report-text-block {
             line-height: 1.7;
+          }
+          .report-text-block h3,
+          .report-heading-group {
+            break-after: avoid;
+            break-inside: avoid;
+            page-break-after: avoid;
+            page-break-inside: avoid;
+          }
+          .report-interpretation-section {
+            break-before: page;
+            page-break-before: always;
           }
           .report-reminder {
             line-height: 1.7;
@@ -513,96 +532,6 @@ export const TestResults: React.FC<TestResultsProps> = ({
       </div>
 
       <ReportPreview />
-
-      <div className="print:hidden mt-8 bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-        <div className="border-b border-gray-200 pb-4 mb-5">
-          <h3 className="text-lg font-bold text-gray-950">
-            {isAr ? "مراجعة الأسئلة والإجابات" : "Item Review"}
-          </h3>
-          <p className="text-xs text-gray-500 mt-1">
-            {isAr
-              ? "اختر مجموعة ثم افتح أي سؤال لمراجعة الاختيار الصحيح وإجابة المتقدم."
-              : "Choose a set and open any item to review the correct and submitted answers."}
-          </p>
-        </div>
-
-        <div className="flex gap-2 mb-5 overflow-x-auto pb-1">
-          {(["A", "B", "C", "D", "E"] as const).map((setKey) => (
-            <button
-              key={setKey}
-              onClick={() => {
-                setSelectedReviewSet(setKey);
-                setActiveReviewIndex(null);
-              }}
-              className={`px-5 py-2 rounded-lg font-bold text-sm transition cursor-pointer flex-1 text-center ${
-                selectedReviewSet === setKey
-                  ? "bg-slate-900 text-white shadow"
-                  : "bg-gray-50 text-gray-600 border border-gray-200 hover:bg-gray-100"
-              }`}
-            >
-              {isAr ? `المجموعة ${setKey}` : `Set ${setKey}`}
-            </button>
-          ))}
-        </div>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 gap-3">
-          {QUESTIONS.filter((question) => question.set === selectedReviewSet).map((question) => {
-            const isCorrect = answers[question.id] === question.correct;
-            const absIdx = QUESTIONS.findIndex((item) => item.id === question.id);
-            const isFocused = activeReviewIndex === absIdx;
-            return (
-              <button
-                key={question.id}
-                onClick={() => setActiveReviewIndex(isFocused ? null : absIdx)}
-                className={`p-3 rounded-lg border text-center transition cursor-pointer ${
-                  isFocused
-                    ? "border-slate-900 bg-slate-50"
-                    : isCorrect
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-800"
-                    : "border-rose-200 bg-rose-50 text-rose-800"
-                }`}
-              >
-                <span className="text-xs text-gray-500 font-bold">#{question.num}</span>
-                <div className="mt-2 flex justify-center">
-                  {isCorrect ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {activeReviewIndex !== null && (
-          <div className="mt-6 border border-gray-200 rounded-lg p-5 bg-gray-50">
-            {(() => {
-              const question = QUESTIONS[activeReviewIndex];
-              const userChoice = answers[question.id] || 0;
-              return (
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
-                  <div className="md:col-span-5 bg-white p-4 border border-gray-200 rounded-lg">
-                    <MatrixRenderer question={question} type="main" />
-                  </div>
-                  <div className="md:col-span-7 space-y-3">
-                    <h4 className="font-extrabold text-gray-900 text-lg">
-                      {isAr ? `السؤال ${question.id}` : `Item ${question.id}`}
-                    </h4>
-                    <div className="grid grid-cols-2 gap-3 text-sm font-bold">
-                      <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-lg text-emerald-800">
-                        {isAr ? `الإجابة الصحيحة: ${question.correct}` : `Correct: ${question.correct}`}
-                      </div>
-                      <div className="p-3 bg-white border border-gray-200 rounded-lg text-gray-800">
-                        {isAr ? `إجابة المتقدم: ${userChoice || "لم يجب"}` : `Participant answer: ${userChoice || "Skipped"}`}
-                      </div>
-                    </div>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      {isAr ? question.explanationAr : question.explanationEn}
-                    </p>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        )}
-      </div>
     </div>
   );
 };
